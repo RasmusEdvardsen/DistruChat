@@ -1,10 +1,8 @@
 package kappapride.distruchat;
 
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -12,24 +10,10 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.concurrent.TimeUnit;
-
-import javax.net.ssl.HttpsURLConnection;
-
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -39,20 +23,20 @@ public class MainActivity extends AppCompatActivity {
     EditText et;
     Socket socket;
     ImageView selfMessageButton;
-    Response response = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //Pointing objects to XML.
         scrollView = (ScrollView) findViewById(R.id.scrollView);
         relativeLayout = (RelativeLayout) findViewById(R.id.relativeLayout);
         et = (EditText) findViewById(R.id.messageFieldMessage);
         selfMessageButton = (ImageView) findViewById(R.id.selfMessageButton);
 
-
-
+        //Forcing down focus from start. Limited functionality, one in createMessage does the bulk work.
+        //Mostly for posterity - in case we support fetching messages.
         scrollView.post(new Runnable() {
             @Override
             public void run() {
@@ -60,6 +44,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+        //Socket initialization.
         try{
             socket = IO.socket("http://192.168.43.21:3000");
         }catch (URISyntaxException e){
@@ -68,8 +54,10 @@ public class MainActivity extends AppCompatActivity {
         socket.on(Socket.EVENT_CONNECT, onConnect);
         //TODO: socket on event message received "chat message" probably.
         socket.connect();
-        socket.emit("chat message", "Welcome to the hive. Cancer runs rampant here. Good luck.");}
+        socket.emit("chat message", "Welcome to the hive. Cancer runs rampant here. Good luck.");
+    }
 
+    //Run when self posts. This will also send messages to server.
     public void selfMessage(View v){
         //TODO: If cr/nl, then just print msg.
         String message = et.getText().toString().trim();
@@ -95,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    //Creating messages to be viewed.
     public void createMessage(String text, boolean isSelf){
         TextView tv = new TextView(this);
         RelativeLayout.LayoutParams tvParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
