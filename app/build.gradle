@@ -27,4 +27,5 @@ dependencies {
         // excluding org.json which is provided by Android
         exclude group: 'org.json', module: 'json'
     }
+    compile 'com.loopj.android:android-async-http:1.4.9'
 }

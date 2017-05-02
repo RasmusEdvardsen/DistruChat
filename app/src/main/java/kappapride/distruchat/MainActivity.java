@@ -3,6 +3,7 @@ package kappapride.distruchat;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -10,6 +11,9 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.json.JSONObject;
+
 import java.net.URISyntaxException;
 import io.socket.client.IO;
 import io.socket.client.Socket;
@@ -47,11 +51,31 @@ public class MainActivity extends AppCompatActivity {
 
         //Socket initialization.
         try{
-            socket = IO.socket("http://192.168.43.21:3000");
+            socket = IO.socket("http://192.168.43.13:3000");
         }catch (URISyntaxException e){
             e.printStackTrace();
         }
         socket.on(Socket.EVENT_CONNECT, onConnect);
+        socket.on("chat message", new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                final String receivedMsg = args[0].toString().trim();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(!receivedMsg.isEmpty()){
+                            createMessage(receivedMsg);
+                        }
+                        scrollView.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                scrollView.fullScroll(View.FOCUS_DOWN);
+                            }
+                        });
+                    }
+                });
+            }
+        });
         //TODO: socket on event message received "chat message" probably.
         socket.connect();
         socket.emit("chat message", "Welcome to the hive. Cancer runs rampant here. Good luck.");
@@ -62,7 +86,6 @@ public class MainActivity extends AppCompatActivity {
         //TODO: If cr/nl, then just print msg.
         String message = et.getText().toString().trim();
         if (!message.isEmpty()){
-            createMessage(message, true);
             et.setText("");
             et.setHint("Write a message");
             try {
@@ -84,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //Creating messages to be viewed.
-    public void createMessage(String text, boolean isSelf){
+    public void createMessage(String text){
         TextView tv = new TextView(this);
         RelativeLayout.LayoutParams tvParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         if(v != null){
@@ -93,19 +116,12 @@ public class MainActivity extends AppCompatActivity {
         }else{
             tv.setId(View.generateViewId());
         }
-        if(isSelf){
-            tvParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-            tvParams.topMargin = 20;
-            tv.setPadding(20, 20, 20, 20);
-            tv.setBackgroundColor(Color.BLUE);
-            tv.setTextColor(Color.WHITE);
-        }else{
-            tvParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-            tvParams.topMargin = 20;
-            tv.setPadding(20, 20, 20, 20);
-            tv.setBackgroundColor(Color.LTGRAY);
-            tv.setTextColor(Color.argb(255, 0, 0, 0));
-        }
+        //DER SKAL CENTRERES!
+        tvParams.addRule(RelativeLayout.TEXT_ALIGNMENT_CENTER);
+        tvParams.topMargin = 20;
+        tv.setPadding(20, 20, 20, 20);
+        tv.setBackgroundColor(Color.BLUE);
+        tv.setTextColor(Color.WHITE);
         tv.setLayoutParams(tvParams);
 
         //Initial handling of emojis.
