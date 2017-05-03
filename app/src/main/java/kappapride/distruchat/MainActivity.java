@@ -12,6 +12,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
@@ -27,11 +28,19 @@ public class MainActivity extends AppCompatActivity {
     EditText et;
     Socket socket;
     ImageView selfMessageButton;
+    String prependedUserName = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        try{
+            JSONObject json = new JSONObject(getIntent().getExtras().getString("responseBody"));
+            prependedUserName = json.getJSONObject("user").getString("userName");
+        } catch (JSONException e){
+            e.printStackTrace();
+        }
 
         //Pointing objects to XML.
         scrollView = (ScrollView) findViewById(R.id.scrollView);
@@ -51,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
 
         //Socket initialization.
         try{
-            socket = IO.socket("http://192.168.43.13:3000");
+            socket = IO.socket("http://130.226.195.227:30022");
         }catch (URISyntaxException e){
             e.printStackTrace();
         }
@@ -76,9 +85,7 @@ public class MainActivity extends AppCompatActivity {
                 });
             }
         });
-        //TODO: socket on event message received "chat message" probably.
         socket.connect();
-        socket.emit("chat message", "Welcome to the hive. Cancer runs rampant here. Good luck.");
     }
 
     //Run when self posts. This will also send messages to server.
@@ -89,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
             et.setText("");
             et.setHint("Write a message");
             try {
-                socket.emit("chat message", message);
+                socket.emit("chat message", prependedUserName+": "+message);
             }catch (Exception e){
                 e.printStackTrace();
             }
@@ -109,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
     //Creating messages to be viewed.
     public void createMessage(String text){
         TextView tv = new TextView(this);
-        RelativeLayout.LayoutParams tvParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams tvParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         if(v != null){
             tvParams.addRule(RelativeLayout.BELOW, v.getId());
             tv.setId(View.generateViewId());
@@ -142,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
     public Emitter.Listener onConnect = new Emitter.Listener() {
         @Override
         public void call(Object... args) {
-            socket.emit("chat message", socket.id()+" connected.");
+            socket.emit("chat message", prependedUserName+" connected.");
         }
     };
 }
