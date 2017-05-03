@@ -2,17 +2,14 @@ package kappapride.distruchat;
 
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.SystemClock;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-import com.loopj.android.http.*;
 
-import org.json.JSONException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
@@ -21,29 +18,27 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.concurrent.TimeUnit;
-
-import cz.msebera.android.httpclient.Header;
-import cz.msebera.android.httpclient.client.HttpClient;
-import cz.msebera.android.httpclient.protocol.HTTP;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LoginPage extends AppCompatActivity {
+
+    final String emoteURL = "https://twitchemotes.com/api_cache/v2/global.json";
 
     EditText studieNummer;
     EditText password;
     Button login;
 
-    User userGlobal;
-
     static AuthAndRetrieve authAndRetrieve;
+    static LoadEmotes loadEmotes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_page);
+
+        loadEmotes = new LoadEmotes();
+        loadEmotes.execute(emoteURL);
 
         studieNummer = (EditText) findViewById(R.id.editTextStudieNummer);
         password = (EditText) findViewById(R.id.editTextPassword);
@@ -98,6 +93,37 @@ public class LoginPage extends AppCompatActivity {
             }
         }
     }
+
+    public class LoadEmotes extends AsyncTask<String, Void, ArrayList<String>> {
+        @Override
+        protected ArrayList<String> doInBackground(String... params) {
+            String string = "";
+            ArrayList<String> jsonEmotes = new ArrayList<String>();
+            try {
+                URL url = new URL(params[0]);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                string = readStream(in);
+                JSONObject json = new JSONObject(string);
+                jsonEmotes.add(json.getJSONObject("emotes").getString("4Head"));
+                jsonEmotes.add(json.getJSONObject("emotes").getString("BabyRage"));
+                jsonEmotes.add(json.getJSONObject("emotes").getString("BibleThump"));
+                urlConnection.disconnect();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return jsonEmotes;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<String> list) {
+            super.onPostExecute(list);
+            EmoteController emoteController = EmoteController.getInstance();
+            emoteController.emoteList = list;
+        }
+    }
+
     private String readStream(InputStream is) {
         try {
             ByteArrayOutputStream bo = new ByteArrayOutputStream();

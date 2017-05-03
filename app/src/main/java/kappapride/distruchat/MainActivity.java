@@ -29,11 +29,14 @@ public class MainActivity extends AppCompatActivity {
     Socket socket;
     ImageView selfMessageButton;
     String prependedUserName = "";
+    EmoteController emoteController = EmoteController.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Log.i("emotelist", emoteController.emoteList.toString());
 
         try{
             JSONObject json = new JSONObject(getIntent().getExtras().getString("responseBody"));
