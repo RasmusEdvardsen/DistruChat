@@ -9,6 +9,7 @@ import android.text.SpannableStringBuilder;
 import android.text.style.ImageSpan;
 import android.util.Log;
 
+import java.lang.reflect.Array;
 import java.net.URL;
 import java.util.ArrayList;
 
@@ -65,20 +66,24 @@ public class EmoteController {
             toMatch.add(temp[0]);
         }
         Log.i("toMatch", toMatch.toString());
-        
+        Log.i("length", String.valueOf(words.length));
         SpannableString ss = new SpannableString(string);
         Log.i("test", emoteNameIdList.toString());
         for (int i = 0; i < words.length; i++) {
-            Log.i("words", words[i].toString());
             for (int j = 0; j < toMatch.size(); j++) {
                 if (toMatch.get(j).matches(words[i])) {
-
-                    ImageSpan is = new ImageSpan(ctx, emoteImgArray.get(j));
-                    ss.setSpan(is, string.indexOf(words[i]), string.indexOf(words[i])+words[i].length(), 0);
+                    ArrayList<Integer> temp = new ArrayList<>();
+                    Integer index = string.indexOf(words[i]);
+                    while(index >= 0) {
+                        ss.setSpan(new ImageSpan(ctx, emoteImgArray.get(j)), index, index+words[i].length(), 0);
+                        temp.add(index);
+                        Log.i("test", temp.toString());
+                        index = string.indexOf(words[i], index+1);
+                    }
+                    Log.i("test", temp.toString());
                 }
             }
         }
-
         return ss;
     }
 
