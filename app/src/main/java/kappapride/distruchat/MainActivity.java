@@ -1,8 +1,12 @@
 package kappapride.distruchat;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.NotificationCompat;
 import android.text.SpannableString;
 import android.text.style.ImageSpan;
 import android.util.Log;
@@ -34,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
     ImageView selfMessageButton;
     String prependedUserName = "";
     EmoteController emoteController = EmoteController.getInstance();
+    NotificationCompat.Builder mBuilder;
+    PendingIntent resultPendingIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,6 +122,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         socket.connect();
+
+        mBuilder =
+                (NotificationCompat.Builder) new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.kappa)
+                        .setContentTitle("You received a new text")
+                        .setContentText("Go to KappaChat to read new Messages");
+        Intent resultIntent = new Intent(this, MainActivity.class);
+        resultPendingIntent =
+                PendingIntent.getActivity(
+                        this,
+                        0,
+                        resultIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
     }
 
     //Run when self posts. This will also send messages to server.
@@ -145,7 +165,18 @@ public class MainActivity extends AppCompatActivity {
 
     //Creating messages to be viewed.
     public void createMessage(String text) {
-        SpannableString ss = new SpannableString(text);
+
+        //Initial notifications.
+        if(!text.startsWith(prependedUserName)){
+            // Sets an ID for the notification
+            int mNotificationId = 001;
+            // Gets an instance of the NotificationManager service
+            NotificationManager mNotifyMgr =
+                    (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            // Builds the notification and issues it.
+            mNotifyMgr.notify(mNotificationId, mBuilder.build());
+        }
+
         TextView tv = new TextView(this);
         RelativeLayout.LayoutParams tvParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         if (v != null) {
@@ -165,6 +196,7 @@ public class MainActivity extends AppCompatActivity {
         if (emoteController.getEmoteImgsLoaded()) {
             tv.setText(emoteController.createSpannableString(getBaseContext(), text));
         } else {
+            Toast.makeText(getBaseContext(), "Still fetching emotes...", Toast.LENGTH_SHORT).show();
             tv.setText(text);
         }
 

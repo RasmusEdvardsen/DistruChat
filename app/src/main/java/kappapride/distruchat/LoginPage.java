@@ -2,6 +2,7 @@ package kappapride.distruchat;
 
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -10,13 +11,9 @@ import android.widget.EditText;
 import android.widget.Toast;
 import org.json.JSONObject;
 import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Iterator;
 
 public class LoginPage extends AppCompatActivity {
 
@@ -30,16 +27,12 @@ public class LoginPage extends AppCompatActivity {
     EditText password;
     Button login;
 
-    static AuthAndRetrieve authAndRetrieve;
-    static LoadEmotes loadEmotes;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_page);
 
-        loadEmotes = new LoadEmotes();
-        loadEmotes.execute("https://twitchemotes.com/api_cache/v2/global.json");
+
 
         studieNummer = (EditText) findViewById(R.id.editTextStudieNummer);
         password = (EditText) findViewById(R.id.editTextPassword);
@@ -51,8 +44,12 @@ public class LoginPage extends AppCompatActivity {
                 String user = studieNummer.getText().toString();
                 String pass = password.getText().toString();
 
-                authAndRetrieve = new AuthAndRetrieve();
-                authAndRetrieve.execute("http://130.226.195.227:30022/chat/api/auth/" + user + "/" + pass);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+                    new AuthAndRetrieve().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, "http://130.226.195.227:30022/chat/api/auth/" + user + "/" + pass);
+                } else {
+                    new AuthAndRetrieve().execute("http://130.226.195.227:30022/chat/api/auth/" + user + "/" + pass);
+                }
+
                 Toast.makeText(getBaseContext(), "Connecting to service...", Toast.LENGTH_LONG).show();
             }
         });
@@ -68,7 +65,7 @@ public class LoginPage extends AppCompatActivity {
                 URL url = new URL(params[0]);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-                string = readStream(in);
+                string = HelperMethods.readStream(in);
                 urlConnection.disconnect();
 
             } catch (Exception e) {
@@ -93,55 +90,6 @@ public class LoginPage extends AppCompatActivity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    // TODO: 09/05/2017 FOR THE LOVE OF GOD, MOVE THIS TO WELCOMEPAGE!!!.
-    //Loading emotename@emoteid into EmoteController for all emotes.
-    public class LoadEmotes extends AsyncTask<String, Void, ArrayList<String>> {
-        @Override
-        protected ArrayList<String> doInBackground(String... params) {
-            ArrayList<String> jsonEmotes = new ArrayList<>();
-            try {
-                URL url = new URL("https://twitchemotes.com/api_cache/v2/global.json");
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                InputStream in = new BufferedInputStream(urlConnection.getInputStream());
-                String string = readStream(in);
-                JSONObject json = new JSONObject(string).getJSONObject("emotes");
-                Iterator<String> temp = json.keys();
-                while (temp.hasNext()) {
-                    String key = temp.next();
-                    String id = json.getJSONObject(key).getString("image_id");
-                    jsonEmotes.add(key+"@"+id);
-                }
-                urlConnection.disconnect();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return jsonEmotes;
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<String> list) {
-            super.onPostExecute(list);
-            emoteController.emoteNameIdList = list;
-            emoteController.setEmotesNamesIdsLoaded(true);
-            emoteController.loadImages();
-        }
-    }
-
-    private String readStream(InputStream is) {
-        try {
-            ByteArrayOutputStream bo = new ByteArrayOutputStream();
-            int i = is.read();
-            while (i != -1) {
-                bo.write(i);
-                i = is.read();
-            }
-            return bo.toString();
-        } catch (IOException e) {
-            return "";
         }
     }
 }

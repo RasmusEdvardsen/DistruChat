@@ -69,6 +69,10 @@ public class EmoteController {
         Log.i("length", String.valueOf(words.length));
         SpannableString ss = new SpannableString(string);
         Log.i("test", emoteNameIdList.toString());
+        
+        // TODO: 09/05/2017 OPTIMIZE!.
+        //This is very inefficient. The for loop iterates through all words, even though same words
+        //are caught by inner loop.
         for (int i = 0; i < words.length; i++) {
             for (int j = 0; j < toMatch.size(); j++) {
                 if (toMatch.get(j).matches(words[i])) {
