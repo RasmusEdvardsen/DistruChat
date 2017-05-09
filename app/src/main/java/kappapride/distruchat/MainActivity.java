@@ -3,6 +3,8 @@ package kappapride.distruchat;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.style.ImageSpan;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -17,6 +19,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
+
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -37,14 +40,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Config cfg = Config.getInstance();
 
-        Log.i("emotelist", emoteController.emoteList.toString());
+        //test
+        Log.i("emotelist", emoteController.getEmotesNamesIdsLoaded() + emoteController.emoteNameIdList.toString());
 
         //Response msg from AuthAndRetrieve functionality.
-        try{
+        try {
             JSONObject json = new JSONObject(getIntent().getExtras().getString("responseBody"));
             prependedUserName = json.getJSONObject("user").getString("userName");
-        } catch (JSONException e){
+        } catch (JSONException e) {
             e.printStackTrace();
         }
 
@@ -65,9 +70,9 @@ public class MainActivity extends AppCompatActivity {
 
 
         //Socket initialization.
-        try{
-            socket = IO.socket("http://130.226.195.227:30022");
-        }catch (URISyntaxException e){
+        try {
+            socket = IO.socket(cfg.socketUrl);
+        } catch (URISyntaxException e) {
             e.printStackTrace();
         }
         socket.on("server info", new Emitter.Listener() {
@@ -77,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if(!receivedMsg.isEmpty()){
+                        if (!receivedMsg.isEmpty()) {
                             createMessage(receivedMsg);
                         }
                         scrollView.post(new Runnable() {
@@ -97,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if(!receivedMsg.isEmpty()){
+                        if (!receivedMsg.isEmpty()) {
                             createMessage(receivedMsg);
                         }
                         scrollView.post(new Runnable() {
@@ -114,18 +119,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //Run when self posts. This will also send messages to server.
-    public void selfMessage(View v){
+    public void selfMessage(View v) {
         //TODO: If cr/nl, then just print msg.
         String message = et.getText().toString().trim();
-        if (!message.isEmpty()){
+        if (!message.isEmpty()) {
             et.setText("");
             et.setHint("Write a message");
             try {
-                socket.emit("chat message", prependedUserName+": "+message);
-            }catch (Exception e){
+                socket.emit("chat message", prependedUserName + ": " + message);
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-        }else{
+        } else {
             Toast.makeText(getBaseContext(), "    The fuck you doing?\nWrite something you fool.", Toast.LENGTH_SHORT).show();
             et.setText("");
             et.setHint("Write a message");
@@ -139,13 +144,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //Creating messages to be viewed.
-    public void createMessage(String text){
+    public void createMessage(String text) {
+        SpannableString ss = new SpannableString(text);
         TextView tv = new TextView(this);
         RelativeLayout.LayoutParams tvParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        if(v != null){
+        if (v != null) {
             tvParams.addRule(RelativeLayout.BELOW, v.getId());
             tv.setId(View.generateViewId());
-        }else{
+        } else {
             tv.setId(View.generateViewId());
         }
         //DER SKAL CENTRERES!
@@ -156,16 +162,11 @@ public class MainActivity extends AppCompatActivity {
         tv.setTextColor(Color.WHITE);
         tv.setLayoutParams(tvParams);
 
-        //Initial handling of emojis.
-        //https://stackoverflow.com/questions/3341702/displaying-emoticons-in-android'
-        /*SpannableString spannableString = new SpannableString("abc");
-        Drawable drawable = getResources().getDrawable(R.drawable.kappa);
-        drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
-        ImageSpan span = new ImageSpan(drawable, ImageSpan.ALIGN_BASELINE);
-        spannableString.setSpan(span, 0, 3, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-        tv.setText(spannableString);*/
-
-        tv.setText(text);
+        if (emoteController.getEmoteImgsLoaded()) {
+            tv.setText(emoteController.createSpannableString(getBaseContext(), text));
+        } else {
+            tv.setText(text);
+        }
 
         v = tv;
         relativeLayout.addView(tv);

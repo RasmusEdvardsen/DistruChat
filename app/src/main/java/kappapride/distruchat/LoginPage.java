@@ -8,11 +8,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -21,11 +17,14 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 public class LoginPage extends AppCompatActivity {
 
-    final String emoteURL = "https://twitchemotes.com/api_cache/v2/global.json";
+    Config cfg = Config.getInstance();
+
+    final String emoteURL = cfg.emoteNameIdUrl;
+
+    EmoteController emoteController = EmoteController.getInstance();
 
     EditText studieNummer;
     EditText password;
@@ -40,7 +39,7 @@ public class LoginPage extends AppCompatActivity {
         setContentView(R.layout.activity_login_page);
 
         loadEmotes = new LoadEmotes();
-        loadEmotes.execute(emoteURL);
+        loadEmotes.execute("https://twitchemotes.com/api_cache/v2/global.json");
 
         studieNummer = (EditText) findViewById(R.id.editTextStudieNummer);
         password = (EditText) findViewById(R.id.editTextPassword);
@@ -97,13 +96,14 @@ public class LoginPage extends AppCompatActivity {
         }
     }
 
+    // TODO: 09/05/2017 FOR THE LOVE OF GOD, MOVE THIS TO WELCOMEPAGE!!!.
     //Loading emotename@emoteid into EmoteController for all emotes.
     public class LoadEmotes extends AsyncTask<String, Void, ArrayList<String>> {
         @Override
         protected ArrayList<String> doInBackground(String... params) {
             ArrayList<String> jsonEmotes = new ArrayList<>();
             try {
-                URL url = new URL(params[0]);
+                URL url = new URL("https://twitchemotes.com/api_cache/v2/global.json");
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 InputStream in = new BufferedInputStream(urlConnection.getInputStream());
                 String string = readStream(in);
@@ -125,8 +125,9 @@ public class LoginPage extends AppCompatActivity {
         @Override
         protected void onPostExecute(ArrayList<String> list) {
             super.onPostExecute(list);
-            EmoteController emoteController = EmoteController.getInstance();
-            emoteController.emoteList = list;
+            emoteController.emoteNameIdList = list;
+            emoteController.setEmotesNamesIdsLoaded(true);
+            emoteController.loadImages();
         }
     }
 
