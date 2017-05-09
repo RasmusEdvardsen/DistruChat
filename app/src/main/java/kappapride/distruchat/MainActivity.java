@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -36,8 +37,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         Log.i("emotelist", emoteController.emoteList.toString());
 
+        //Response msg from AuthAndRetrieve functionality.
         try{
             JSONObject json = new JSONObject(getIntent().getExtras().getString("responseBody"));
             prependedUserName = json.getJSONObject("user").getString("userName");
@@ -67,7 +70,26 @@ public class MainActivity extends AppCompatActivity {
         }catch (URISyntaxException e){
             e.printStackTrace();
         }
-        socket.on(Socket.EVENT_CONNECT, onConnect);
+        socket.on("server info", new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                final String receivedMsg = args[0].toString().trim();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(!receivedMsg.isEmpty()){
+                            createMessage(receivedMsg);
+                        }
+                        scrollView.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                scrollView.fullScroll(View.FOCUS_DOWN);
+                            }
+                        });
+                    }
+                });
+            }
+        });
         socket.on("chat message", new Emitter.Listener() {
             @Override
             public void call(Object... args) {
@@ -127,8 +149,8 @@ public class MainActivity extends AppCompatActivity {
             tv.setId(View.generateViewId());
         }
         //DER SKAL CENTRERES!
-        tvParams.addRule(RelativeLayout.TEXT_ALIGNMENT_CENTER);
         tvParams.topMargin = 20;
+        tv.setGravity(Gravity.CENTER);
         tv.setPadding(20, 20, 20, 20);
         tv.setBackgroundColor(Color.BLUE);
         tv.setTextColor(Color.WHITE);
@@ -148,11 +170,4 @@ public class MainActivity extends AppCompatActivity {
         v = tv;
         relativeLayout.addView(tv);
     }
-
-    public Emitter.Listener onConnect = new Emitter.Listener() {
-        @Override
-        public void call(Object... args) {
-            socket.emit("chat message", prependedUserName+" connected.");
-        }
-    };
 }
