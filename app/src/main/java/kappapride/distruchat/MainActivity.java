@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        // TODO: 10/05/2017 Maybe find other way to do following 2 lines (center align app name + custom text). 
+        // TODO: 10/05/2017 Maybe find other way to do following 2 lines (center align app name + custom text).
         getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         getSupportActionBar().setCustomView(R.layout.abs_layout);
 
