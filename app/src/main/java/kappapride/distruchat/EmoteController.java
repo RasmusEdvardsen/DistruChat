@@ -53,9 +53,7 @@ public class EmoteController {
     public void setEmoteImgsLoaded(boolean bool) {
         emoteImgsLoaded = bool;
     }
-
-
-    // TODO: 09/05/2017 FIX INTERACTION WITH '+'!.
+    
     public SpannableString createSpannableString(Context ctx, String string) {
         String[] words = string.split(" ");
         ArrayList<String> toMatch = new ArrayList<>();
@@ -72,6 +70,9 @@ public class EmoteController {
         //This is very inefficient. The for loop iterates through all words, even though same words
         //are caught by inner loop.
         for (int i = 0; i < words.length; i++) {
+            if(words[i].matches("[^a-zA-Z]+")){
+                continue;
+            }
             for (int j = 0; j < toMatch.size(); j++) {
                 if (toMatch.get(j).matches(words[i])) {
                     ArrayList<Integer> temp = new ArrayList<>();
