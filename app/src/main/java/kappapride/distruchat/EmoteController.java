@@ -53,7 +53,7 @@ public class EmoteController {
     public void setEmoteImgsLoaded(boolean bool) {
         emoteImgsLoaded = bool;
     }
-    
+
     public SpannableString createSpannableString(Context ctx, String string) {
         String[] words = string.split(" ");
         ArrayList<String> toMatch = new ArrayList<>();
