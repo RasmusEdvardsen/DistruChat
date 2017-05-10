@@ -20,8 +20,6 @@ import java.net.URL;
 
 public class LoginPage extends AppCompatActivity {
 
-    Config cfg = Config.getInstance();
-
     EditText studieNummer;
     EditText password;
     Button login;
