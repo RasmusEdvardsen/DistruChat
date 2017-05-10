@@ -1,8 +1,11 @@
 package kappapride.distruchat;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.preference.PreferenceManager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -19,18 +22,14 @@ public class WelcomePage extends AppCompatActivity {
 
     EmoteController emoteController = EmoteController.getInstance();
 
-
-    Config cfg = Config.getInstance();
-
-    final String emoteURL = cfg.emoteNameIdUrl;
+    final String emoteURL = Config.emoteNameIdUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_welcome_page);
-
-        /*loadEmotes = new LoadEmotes();
-        loadEmotes.execute("https://twitchemotes.com/api_cache/v2/global.json");*/
+        getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+        getSupportActionBar().setCustomView(R.layout.abs_layout);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             new LoadEmotes().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, emoteURL);
@@ -52,7 +51,6 @@ public class WelcomePage extends AppCompatActivity {
         thread.start();
     }
 
-    // TODO: 09/05/2017 FOR THE LOVE OF GOD, MOVE THIS TO WELCOMEPAGE!!!.
     //Loading emotename@emoteid into EmoteController for all emotes.
     public class LoadEmotes extends AsyncTask<String, Void, ArrayList<String>> {
         @Override

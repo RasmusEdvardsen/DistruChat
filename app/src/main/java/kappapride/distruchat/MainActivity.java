@@ -3,13 +3,13 @@ package kappapride.distruchat;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Color;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.app.NotificationCompat;
-import android.text.SpannableString;
-import android.text.style.ImageSpan;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.EditText;
@@ -36,20 +36,18 @@ public class MainActivity extends AppCompatActivity {
     EditText et;
     Socket socket;
     ImageView selfMessageButton;
-    String prependedUserName = "";
     EmoteController emoteController = EmoteController.getInstance();
-    NotificationCompat.Builder mBuilder;
-    PendingIntent resultPendingIntent;
+    String prependedUserName = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        // TODO: 10/05/2017 Maybe find other way to do following 2 lines (center align app name + custom text). 
+        getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+        getSupportActionBar().setCustomView(R.layout.abs_layout);
 
-        Config cfg = Config.getInstance();
-
-        //test
-        Log.i("emotelist", emoteController.getEmotesNamesIdsLoaded() + emoteController.emoteNameIdList.toString());
+        // TODO: 09/05/2017 Retrieve messages from server when reentering again
 
         //Response msg from AuthAndRetrieve functionality.
         try {
@@ -74,10 +72,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-
         //Socket initialization.
         try {
-            socket = IO.socket(cfg.socketUrl);
+            socket = IO.socket(Config.socketUrl);
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
@@ -122,20 +119,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         socket.connect();
-
-        mBuilder =
-                (NotificationCompat.Builder) new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.kappa)
-                        .setContentTitle("You received a new text")
-                        .setContentText("Go to KappaChat to read new Messages");
-        Intent resultIntent = new Intent(this, MainActivity.class);
-        resultPendingIntent =
-                PendingIntent.getActivity(
-                        this,
-                        0,
-                        resultIntent,
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                );
     }
 
     //Run when self posts. This will also send messages to server.
@@ -166,15 +149,9 @@ public class MainActivity extends AppCompatActivity {
     //Creating messages to be viewed.
     public void createMessage(String text) {
 
-        //Initial notifications.
-        if(!text.startsWith(prependedUserName)){
-            // Sets an ID for the notification
-            int mNotificationId = 001;
-            // Gets an instance of the NotificationManager service
-            NotificationManager mNotifyMgr =
-                    (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            // Builds the notification and issues it.
-            mNotifyMgr.notify(mNotificationId, mBuilder.build());
+        // TODO: 10/05/2017 Handle only sending notifications when actual message from user!.
+        if (!text.startsWith(prependedUserName)) {
+            HelperMethods.generateNotification(getBaseContext(), prependedUserName, text);
         }
 
         TextView tv = new TextView(this);
@@ -189,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
         tvParams.topMargin = 20;
         tv.setGravity(Gravity.CENTER);
         tv.setPadding(20, 20, 20, 20);
-        tv.setBackgroundColor(Color.BLUE);
+        tv.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.colorNewPrimary));
         tv.setTextColor(Color.WHITE);
         tv.setLayoutParams(tvParams);
 

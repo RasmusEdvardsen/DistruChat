@@ -8,7 +8,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="kappapride.distruchat.WelcomePage"
-    android:background="@color/colorNewPrimary">
+    android:background="@color/offWhite">
 
     <ImageView
         android:layout_width="240sp"
@@ -22,11 +22,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="KappaChat"
+        android:text="Unfiltered &amp; Unmoderated"
         android:id="@+id/welcomePageText"
         android:layout_above="@+id/welcomePageImage"
         android:layout_centerHorizontal="true"
-        android:textColor="@color/colorNewPrimaryDark"
-        android:textSize="40dp"
+        android:textColor="@color/colorAccent"
+        android:textSize="22sp"
         android:padding="4dp" />
 </RelativeLayout>

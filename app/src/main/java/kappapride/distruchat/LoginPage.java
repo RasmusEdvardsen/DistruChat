@@ -3,6 +3,7 @@ package kappapride.distruchat;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -19,10 +20,6 @@ public class LoginPage extends AppCompatActivity {
 
     Config cfg = Config.getInstance();
 
-    final String emoteURL = cfg.emoteNameIdUrl;
-
-    EmoteController emoteController = EmoteController.getInstance();
-
     EditText studieNummer;
     EditText password;
     Button login;
@@ -31,8 +28,8 @@ public class LoginPage extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_page);
-
-
+        getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+        getSupportActionBar().setCustomView(R.layout.abs_layout);
 
         studieNummer = (EditText) findViewById(R.id.editTextStudieNummer);
         password = (EditText) findViewById(R.id.editTextPassword);

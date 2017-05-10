@@ -24,10 +24,10 @@ public class EmoteController {
 
     private static boolean emoteImgsLoaded = false;
 
-    public ArrayList<String> emoteNameIdList = new ArrayList<String>();
+    public ArrayList<String> emoteNameIdList = new ArrayList<>();
 
     // TODO: 09/05/2017 Create SQLite DB for this.
-    public ArrayList<Bitmap> emoteImgArray = new ArrayList<Bitmap>();
+    public ArrayList<Bitmap> emoteImgArray = new ArrayList<>();
 
     static LoadEmoteImgs loadEmoteImgs;
 
@@ -55,9 +55,7 @@ public class EmoteController {
     }
 
 
-    // TODO: 09/05/2017 FIX NO MULTIPLE OCCURENCES!.
     // TODO: 09/05/2017 FIX INTERACTION WITH '+'!.
-    // TODO: 09/05/2017 PUT LOADING IMAGES IN WELCOMEPAGE!.
     public SpannableString createSpannableString(Context ctx, String string) {
         String[] words = string.split(" ");
         ArrayList<String> toMatch = new ArrayList<>();
@@ -69,7 +67,7 @@ public class EmoteController {
         Log.i("length", String.valueOf(words.length));
         SpannableString ss = new SpannableString(string);
         Log.i("test", emoteNameIdList.toString());
-        
+
         // TODO: 09/05/2017 OPTIMIZE!.
         //This is very inefficient. The for loop iterates through all words, even though same words
         //are caught by inner loop.
